@@ -17,7 +17,7 @@ services:
           memory: 256m
           cpus: '0.5'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      test: ["CMD-SHELL", "node -e \"const h=require('http');h.get('http://localhost:3001/ping',(r)=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\""]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -44,7 +44,7 @@ services:
           memory: 64m
           cpus: '0.25'
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:2019/config/ || exit 1"]
+      test: ["CMD", "caddy", "version"]
       interval: 30s
       timeout: 5s
       retries: 3
