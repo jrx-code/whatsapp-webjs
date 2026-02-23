@@ -1,0 +1,4 @@
+whatsapp.home.iwanus.eu {
+	tls /certs/fullchain.pem /certs/key.pem
+	reverse_proxy api:3001
+}
