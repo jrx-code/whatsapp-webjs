@@ -14,7 +14,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          memory: 1024m
           cpus: '0.5'
     healthcheck:
       test: ["CMD-SHELL", "node -e \"const h=require('http');h.get('http://localhost:3001/ping',(r)=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\""]
