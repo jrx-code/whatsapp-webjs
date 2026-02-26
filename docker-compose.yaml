@@ -7,7 +7,7 @@ services:
   api:
     image: avoylenko/wwebjs-api:latest
     container_name: wwebjs-web-api
-    restart: always
+    restart: unless-stopped
     env_file: .env
     volumes:
       - ./sessions:/usr/src/app/sessions
