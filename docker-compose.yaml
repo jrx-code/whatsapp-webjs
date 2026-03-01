@@ -8,6 +8,16 @@ services:
     image: avoylenko/wwebjs-api:latest
     container_name: wwebjs-web-api
     restart: unless-stopped
+    labels:
+      nas.monitor: "true"
+      nas.monitor.check_script: "whatsapp"
+      nas.autorepair: "true"
+      nas.autorepair.repair: "whatsapp"
+      nas.autorepair.check: "http_node"
+      nas.autorepair.check_args: "3001|/ping"
+      nas.ha.id: "whatsapp"
+      nas.ha.name: "WhatsApp"
+      nas.ha.icon: "mdi:whatsapp"
     env_file: .env
     volumes:
       - ./sessions:/usr/src/app/sessions
