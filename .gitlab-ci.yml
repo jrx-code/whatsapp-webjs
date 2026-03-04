@@ -1,0 +1,7 @@
+include:
+  - project: 'jiwanus/ci-templates'
+    file: '.gitlab-ci-service.yml'
+
+variables:
+  SERVICE_NAME: whatsapp-webjs
+  CONTAINER_NAME: wwebjs-web-api
