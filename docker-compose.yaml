@@ -44,8 +44,10 @@ services:
     image: caddy:2-alpine
     container_name: whatsapp-caddy
     restart: unless-stopped
+    env_file: .env
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./webui:/srv/webui:ro
       - /share/Maintenance/key-management/ssl/fullchain.pem:/certs/fullchain.pem:ro
       - /share/Maintenance/key-management/ssl/key.pem:/certs/key.pem:ro
     deploy:

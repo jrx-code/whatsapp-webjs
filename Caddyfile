@@ -1,4 +1,4 @@
-whatsapp.iwanus.eu {
+whatsapp.iwanus.eu, whatsapp.home.iwanus.eu {
 	tls /certs/fullchain.pem /certs/key.pem
 
 	handle /api/* {
