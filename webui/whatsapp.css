@@ -1,0 +1,157 @@
+/* ==========================================================================
+   WhatsApp API — App-specific styles
+   Requires: nord.css
+   ========================================================================== */
+
+/* --- App header --- */
+.app-header {
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-header h1 { font-size: 18px; }
+
+.app-header .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.app-header .dot.ok { background: var(--green); }
+.app-header .dot.err { background: var(--red); }
+
+/* --- Session select --- */
+.session-select {
+  margin-left: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  width: auto;
+}
+
+.session-select:focus { outline: none; border-color: var(--accent); }
+.session-select option { background: var(--bg-raised); color: var(--text); }
+
+/* --- Container --- */
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --- Row layout --- */
+.row { display: flex; gap: 20px; }
+.row > * { flex: 1; min-width: 0; }
+
+/* Standalone label (not in .form-group) */
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+textarea { min-height: 80px; }
+
+/* --- WhatsApp-specific button variants --- */
+.btn-green { background: var(--green); color: #1a1a2e; }
+.btn-blue { background: var(--accent); color: #1a1a2e; }
+.btn-red { background: var(--red); color: #fff; }
+
+/* --- Diagnostics grid --- */
+.diag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.diag-item {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.diag-item .label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.diag-item .value { font-size: 14px; word-break: break-all; }
+.diag-item .value.loading { color: var(--text-dim); }
+
+/* --- Contacts --- */
+.contacts-search { margin-bottom: 12px; }
+
+.contacts-list {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.1s;
+}
+
+.contact-item:hover { background: var(--bg-hover); }
+.contact-item .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.contact-item .number { color: var(--text-dim); font-size: 12px; flex-shrink: 0; }
+
+.contacts-list::-webkit-scrollbar { width: 6px; }
+.contacts-list::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 3px; }
+
+/* --- Actions row --- */
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* --- QR overlay --- */
+.qr-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.qr-box {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  max-width: 360px;
+}
+
+.qr-box img { max-width: 280px; margin: 12px 0; border-radius: var(--radius); }
+.qr-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+
+/* --- Responsive --- */
+@media (max-width: 640px) {
+  .row { flex-direction: column; }
+}

@@ -1,0 +1,355 @@
+/* ==========================================================================
+   Nord Theme — Shared CSS for JI Engineering Web UIs
+   Palette: Nord (https://www.nordtheme.com/)
+   Source: tools/nord-theme/nord.css
+   Distributed by: distribute.sh
+   ========================================================================== */
+
+/* --- CSS Variables --- */
+:root {
+  /* Polar Night */
+  --bg: #2e3440;
+  --bg-raised: #3b4252;
+  --bg-hover: #434c5e;
+  --bg-input: #4c566a;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Snow Storm */
+  --text: #eceff4;
+  --text-muted: #d8dee9;
+  --text-dim: #81899b;
+
+  /* Frost */
+  --accent: #88c0d0;
+  --accent-hover: #8fbcbb;
+  --frost: #81a1c1;
+
+  /* Aurora */
+  --green: #a3be8c;
+  --green-bg: rgba(163, 190, 140, 0.15);
+  --red: #bf616a;
+  --red-bg: rgba(191, 97, 106, 0.15);
+  --yellow: #ebcb8b;
+  --yellow-bg: rgba(235, 203, 139, 0.12);
+  --purple: #b48ead;
+  --purple-bg: rgba(180, 142, 173, 0.15);
+  --orange: #d08770;
+  --orange-bg: rgba(208, 135, 112, 0.15);
+
+  /* Misc */
+  --border: #4c566a;
+  --radius: 8px;
+}
+
+/* --- Reset --- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+a { color: var(--accent); }
+button { cursor: pointer; border: none; font: inherit; }
+
+/* --- Typography --- */
+h1 { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+h2 { font-size: 1.25rem; font-weight: 600; color: var(--text); }
+.subtitle {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+/* --- Tabs --- */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--border);
+}
+
+.tab {
+  padding: 10px 24px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-dim);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* --- Stats grid --- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--bg-raised);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.stat-card .value { font-size: 1.6rem; font-weight: 700; color: var(--text); }
+.stat-card .label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Cards --- */
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-body { padding: 16px; }
+
+/* --- Tables --- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  table-layout: fixed;
+}
+
+thead th {
+  text-align: left;
+  padding: 8px 16px;
+  font-weight: 600;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+tbody td {
+  padding: 8px 16px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+
+tbody tr:hover { background: var(--bg-hover); }
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.15s;
+  font-weight: 500;
+}
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary { background: var(--accent); color: #1a1a2e; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--bg-input); }
+
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger:hover:not(:disabled) { opacity: 0.85; }
+
+.btn-warning { background: var(--yellow); color: #1a1a2e; }
+.btn-warning:hover:not(:disabled) { opacity: 0.85; }
+
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+.btn-block { width: 100%; }
+
+/* --- Badges --- */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-success { background: var(--green-bg); color: var(--green); }
+.badge-warning { background: var(--yellow-bg); color: var(--yellow); }
+.badge-danger  { background: var(--red-bg); color: var(--red); }
+.badge-info    { background: rgba(136, 192, 208, 0.15); color: var(--accent); }
+.badge-muted   { background: var(--bg-hover); color: var(--text-dim); }
+
+/* --- Forms --- */
+.form-group { margin-bottom: 16px; }
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.error-msg {
+  color: var(--red);
+  font-size: 0.85rem;
+  margin-top: 8px;
+  min-height: 1.2em;
+}
+
+/* --- Overlay --- */
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.overlay-content {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.overlay-close-btn {
+  position: absolute;
+  top: 12px; right: 12px;
+  font-size: 1.3rem;
+  padding: 4px 8px;
+}
+
+/* --- Toast --- */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 200;
+  transition: opacity 0.3s;
+}
+
+.toast-success { background: #3b5a3b; border: 1px solid var(--green); }
+.toast-error   { background: #5a3b3b; border: 1px solid var(--red); }
+.toast-warning { background: #5a4a2b; border: 1px solid var(--yellow); }
+
+/* --- Login card --- */
+.login-card {
+  max-width: 360px;
+  margin: 100px auto 0;
+  background: var(--bg-raised);
+  padding: 32px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.login-card h1 { text-align: center; margin-bottom: 8px; }
+
+/* --- Empty state --- */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+/* --- Status message --- */
+.status-msg {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  display: none;
+}
+
+.status-msg.ok  { display: block; background: var(--green-bg); color: var(--green); border: 1px solid rgba(163, 190, 140, 0.3); }
+.status-msg.err { display: block; background: var(--red-bg); color: var(--red); border: 1px solid rgba(191, 97, 106, 0.3); }
+
+/* --- Utilities --- */
+.hidden { display: none !important; }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  body { padding: 12px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .form-row { grid-template-columns: 1fr; }
+}

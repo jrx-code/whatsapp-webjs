@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WhatsApp API</title>
+<link rel="stylesheet" href="/nord.css">
+<link rel="stylesheet" href="/whatsapp.css">
+</head>
+<body>
+
+<div class="app-header">
+  <div class="dot" id="statusDot"></div>
+  <h1>WhatsApp API</h1>
+  <select class="session-select" id="sessionSelect" onchange="switchSession()"></select>
+</div>
+
+<div class="container">
+  <!-- Send message -->
+  <div class="card">
+    <div class="card-title">Wyslij wiadomosc</div>
+    <div class="card-body">
+      <div class="row" style="margin-bottom:12px">
+        <div>
+          <label for="phone">Odbiorca</label>
+          <input type="text" id="phone" placeholder="+48 500 600 700 lub ID grupy">
+        </div>
+        <div style="flex:2">
+          <label for="msg">Tresc</label>
+          <textarea id="msg" placeholder="Wpisz wiadomosc..."></textarea>
+        </div>
+      </div>
+      <button class="btn btn-green" id="sendBtn" onclick="sendMessage()">Wyslij</button>
+      <div class="status-msg" id="sendStatus"></div>
+    </div>
+  </div>
+
+  <!-- Diagnostics -->
+  <div class="card">
+    <div class="card-title">Diagnostyka</div>
+    <div class="card-body">
+      <div class="diag-grid" id="diagGrid">
+        <div class="diag-item"><div class="label">Status sesji</div><div class="value loading" id="d-session">---</div></div>
+        <div class="diag-item"><div class="label">Stan klienta</div><div class="value loading" id="d-state">---</div></div>
+        <div class="diag-item"><div class="label">Numer</div><div class="value loading" id="d-number">---</div></div>
+        <div class="diag-item"><div class="label">Platforma</div><div class="value loading" id="d-platform">---</div></div>
+        <div class="diag-item"><div class="label">WhatsApp Web</div><div class="value loading" id="d-version">---</div></div>
+        <div class="diag-item"><div class="label">Push name</div><div class="value loading" id="d-pushname">---</div></div>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn-ghost" onclick="refreshDiag()">Odswiez</button>
+        <button class="btn-ghost" onclick="showQr()">Pokaz QR</button>
+        <button class="btn-ghost btn-red" style="border-color:#ef444444" onclick="restartSession()">Restart sesji</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contacts -->
+  <div class="card">
+    <div class="card-title">Grupy</div>
+    <div class="card-body">
+      <input type="search" class="contacts-search" id="contactSearch" placeholder="Szukaj grupy..." oninput="filterContacts()">
+      <div class="contacts-list" id="contactsList">
+        <div style="color:var(--text-dim);font-size:13px;padding:12px">Ladowanie kontaktow...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+let currentSession = '';
+let allContacts = [];
+
+async function api(path, opts = {}) {
+  const res = await fetch(`${API}${path}`, opts);
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function loadSessions() {
+  try {
+    const res = await fetch('/sessions.json');
+    const sessions = await res.json();
+    const select = document.getElementById('sessionSelect');
+    select.innerHTML = '';
+    for (const s of sessions) {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      select.appendChild(opt);
+    }
+    currentSession = localStorage.getItem('wa-session') || sessions[0] || '';
+    if (sessions.includes(currentSession)) {
+      select.value = currentSession;
+    } else {
+      currentSession = sessions[0] || '';
+    }
+  } catch {
+    currentSession = 'HomeAssistant';
+    const select = document.getElementById('sessionSelect');
+    select.innerHTML = '<option value="HomeAssistant">HomeAssistant</option>';
+  }
+  refreshAll();
+}
+
+function switchSession() {
+  currentSession = document.getElementById('sessionSelect').value;
+  localStorage.setItem('wa-session', currentSession);
+  refreshAll();
+}
+
+function refreshAll() {
+  refreshDiag();
+  loadContacts();
+}
+
+function setDiag(id, value, isError) {
+  const el = document.getElementById(id);
+  el.textContent = value || '---';
+  el.className = 'value' + (isError ? '' : '');
+  if (!value) el.classList.add('loading');
+}
+
+function showSendStatus(msg, ok) {
+  const el = document.getElementById('sendStatus');
+  el.textContent = msg;
+  el.className = 'status-msg ' + (ok ? 'ok' : 'err');
+  if (ok) setTimeout(() => { el.className = 'status-msg'; }, 5000);
+}
+
+function cleanPhone(raw) {
+  const digits = raw.replace(/[^0-9+]/g, '');
+  if (digits.startsWith('+')) return digits.slice(1);
+  if (digits.startsWith('48') && digits.length >= 11) return digits;
+  if (digits.length === 9) return '48' + digits;
+  return digits;
+}
+
+async function sendMessage() {
+  const phone = document.getElementById('phone').value.trim();
+  const msg = document.getElementById('msg').value.trim();
+  if (!phone || !msg) return showSendStatus('Wypelnij numer i tresc', false);
+
+  const chatId = phone.includes('@') ? phone : cleanPhone(phone) + '@c.us';
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.textContent = 'Wysylanie...';
+
+  try {
+    await api(`/client/sendMessage/${currentSession}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatId, contentType: 'string', content: msg })
+    });
+    showSendStatus('Wiadomosc wyslana (' + currentSession + ')', true);
+    document.getElementById('msg').value = '';
+  } catch (e) {
+    showSendStatus('Blad: ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Wyslij';
+  }
+}
+
+async function refreshDiag() {
+  const dot = document.getElementById('statusDot');
+
+  try {
+    const s = await api(`/session/status/${currentSession}`);
+    setDiag('d-session', s.success !== false ? (s.state || s.status || 'OK') : 'Error');
+  } catch { setDiag('d-session', 'Niedostepny', true); }
+
+  try {
+    const s = await api(`/client/getState/${currentSession}`);
+    const state = s.state || s.data || JSON.stringify(s);
+    setDiag('d-state', typeof state === 'string' ? state : JSON.stringify(state));
+    dot.className = 'dot' + (state === 'CONNECTED' || state === true ? ' ok' : ' err');
+  } catch {
+    setDiag('d-state', 'Niedostepny', true);
+    dot.className = 'dot err';
+  }
+
+  try {
+    const info = await api(`/client/getClassInfo/${currentSession}`);
+    const d = info.sessionInfo || info.data || info;
+    setDiag('d-number', d.wid?.user || d.me?.user || '---');
+    setDiag('d-platform', d.platform || '---');
+    setDiag('d-pushname', d.pushname || '---');
+  } catch {
+    setDiag('d-number', '---');
+    setDiag('d-platform', '---');
+    setDiag('d-pushname', '---');
+  }
+
+  try {
+    const v = await api(`/client/getWWebVersion/${currentSession}`);
+    setDiag('d-version', v.result || v.version || v.data || '---');
+  } catch { setDiag('d-version', '---'); }
+}
+
+async function restartSession() {
+  if (!confirm('Restartowac sesje ' + currentSession + '?')) return;
+  try {
+    await api(`/session/restart/${currentSession}`);
+    showSendStatus('Sesja restartowana — poczekaj chwile', true);
+    setTimeout(refreshDiag, 5000);
+  } catch (e) {
+    showSendStatus('Blad restartu: ' + e.message, false);
+  }
+}
+
+function showQr() {
+  const overlay = document.createElement('div');
+  overlay.className = 'qr-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `<div class="qr-box">
+    <p>Zeskanuj QR kodem w WhatsApp<br>(Ustawienia → Polaczone urzadzenia)</p>
+    <img src="${API}/session/qr/${currentSession}/image" alt="QR Code" onerror="this.alt='QR niedostepny — sesja moze byc juz polaczona'">
+    <br><button class="btn btn-ghost" onclick="this.closest('.qr-overlay').remove()">Zamknij</button>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function loadContacts() {
+  try {
+    const res = await api(`/client/getContacts/${currentSession}`);
+    const raw = res.data || res.contacts || res;
+    if (!Array.isArray(raw)) { allContacts = []; return; }
+
+    allContacts = raw
+      .filter(c => c.isGroup)
+      .map(c => ({
+        name: c.name || c.id?.user || '?',
+        number: '',
+        chatId: c.id?._serialized || '',
+        isGroup: true
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'pl'));
+    renderContacts(allContacts);
+  } catch {
+    document.getElementById('contactsList').innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:12px">Nie udalo sie zaladowac kontaktow</div>';
+  }
+}
+
+function renderContacts(list) {
+  const el = document.getElementById('contactsList');
+  if (!list.length) { el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:12px">Brak grup</div>'; return; }
+  el.innerHTML = list.map(c =>
+    `<div class="contact-item" onclick="pickContact('${esc(c.chatId)}','',true)"><span class="name">${esc(c.name)}</span></div>`
+  ).join('');
+}
+
+function pickContact(chatId, number, isGroup) {
+  const field = document.getElementById('phone');
+  field.value = isGroup ? chatId : (number ? '+' + number : chatId);
+  document.getElementById('msg').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function filterContacts() {
+  const q = document.getElementById('contactSearch').value.toLowerCase();
+  if (!q) return renderContacts(allContacts);
+  renderContacts(allContacts.filter(c => c.name.toLowerCase().includes(q) || c.number.includes(q)));
+}
+
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Init
+loadSessions();
+</script>
+</body>
+</html>
