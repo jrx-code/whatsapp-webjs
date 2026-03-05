@@ -1,4 +1,23 @@
-whatsapp.home.iwanus.eu {
+whatsapp.iwanus.eu {
 	tls /certs/fullchain.pem /certs/key.pem
-	reverse_proxy api:3001
+
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy api:3001 {
+			header_up x-api-key {$WHATSAPP_API_KEY}
+		}
+	}
+
+	@backend path /ping /session/* /client/*
+	handle @backend {
+		reverse_proxy api:3001 {
+			header_up x-api-key {$WHATSAPP_API_KEY}
+		}
+	}
+
+	handle {
+		root * /srv/webui
+		try_files {path} /index.html
+		file_server
+	}
 }
