@@ -17,7 +17,6 @@ whatsapp.example.com {
 
 	handle {
 		root * /srv/webui
-		try_files {path} /index.html
 		file_server
 	}
 }
