@@ -1,0 +1,34 @@
+notify:
+  name: WhatsApp Notifier
+  description: Send a WhatsApp notification via wwebjs-api
+  fields:
+    message:
+      name: Message
+      description: The message body to send
+      required: true
+      example: "Hello, World!"
+      selector:
+        text:
+    title:
+      name: Title
+      description: Optional bold title prepended to the message
+      required: false
+      example: "Alert"
+      selector:
+        text:
+    target:
+      name: Target
+      description: "WhatsApp chat ID (e.g. 123456@c.us or 123456@g.us)"
+      required: true
+      example: "123456789@c.us"
+      selector:
+        text:
+    data:
+      name: Data
+      description: Additional data payload
+      required: false
+      advanced: true
+      example:
+        media_url: "https://example.com/image.jpg"
+      selector:
+        object:
