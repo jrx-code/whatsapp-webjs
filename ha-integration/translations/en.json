@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WhatsApp API",
+        "description": "Enter the URL of your wwebjs-api instance.",
+        "data": {
+          "api_url": "API URL"
+        }
+      },
+      "auth": {
+        "title": "Authentication",
+        "description": "API at {api_url} requires authentication.",
+        "data": {
+          "api_key": "API Key"
+        }
+      },
+      "session": {
+        "title": "Session",
+        "description": "Enter the WhatsApp session ID to use.",
+        "data": {
+          "session": "Session ID"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to WhatsApp API",
+      "invalid_auth": "Invalid API key"
+    },
+    "abort": {
+      "already_configured": "This session is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WhatsApp Notifier Settings",
+        "description": "Configure contacts for quick-send entities.\n{contacts_help}",
+        "data": {
+          "contacts": "Contacts"
+        }
+      }
+    }
+  }
+}
