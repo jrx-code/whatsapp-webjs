@@ -5,7 +5,7 @@ name: whatsapp-api
 
 services:
   api:
-    image: avoylenko/wwebjs-api:latest
+    image: wwebjs-api-patched:latest
     container_name: wwebjs-web-api
     restart: unless-stopped
     labels:
