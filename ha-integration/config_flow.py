@@ -137,7 +137,7 @@ class WapiConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="session",
             data_schema=vol.Schema(
-                {vol.Required(CONF_SESSION, default="571603685"): str}
+                {vol.Required(CONF_SESSION): str}
             ),
             errors=errors,
             description_placeholders={"api_url": self._api_url},
@@ -159,34 +159,93 @@ class WapiOptionsFlow(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
-        """Manage options."""
-        if user_input is not None:
-            contacts: dict[str, str] = {}
-            raw = user_input.get(CONF_CONTACTS, "")
-            for line in raw.strip().splitlines():
-                line = line.strip()
-                if "=" in line:
-                    name, chat_id = line.split("=", 1)
-                    contacts[name.strip()] = chat_id.strip()
-
-            return self.async_create_entry(
-                title="",
-                data={CONF_CONTACTS: contacts},
-            )
-
+        """Show current contacts and offer add/remove."""
         current_contacts = self._config_entry.options.get(CONF_CONTACTS, {})
-        contacts_str = "\n".join(
-            f"{name}={chat_id}" for name, chat_id in current_contacts.items()
-        )
+
+        if user_input is not None:
+            action = user_input.get("action", "done")
+            if action == "add":
+                return await self.async_step_add_contact()
+            if action == "remove" and current_contacts:
+                return await self.async_step_remove_contact()
+            return self.async_create_entry(title="", data=self._config_entry.options)
+
+        contact_list = ", ".join(current_contacts.keys()) if current_contacts else "—"
+
+        actions = ["done", "add"]
+        if current_contacts:
+            actions.append("remove")
 
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Optional(CONF_CONTACTS, default=contacts_str): str,
+                    vol.Required("action", default="done"): vol.In(
+                        {
+                            "done": "Save & close",
+                            "add": "Add contact",
+                            **({"remove": "Remove contact"} if current_contacts else {}),
+                        }
+                    ),
                 }
             ),
-            description_placeholders={
-                "contacts_help": "One per line: Name=ChatID (e.g. Jarek=48571603685@c.us)"
-            },
+            description_placeholders={"contacts_list": contact_list},
+        )
+
+    async def async_step_add_contact(
+        self, user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Add a new contact."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            name = user_input["contact_name"].strip()
+            chat_id = user_input["chat_id"].strip()
+
+            if not name or not chat_id:
+                errors["base"] = "empty_fields"
+            elif not chat_id.endswith("@c.us"):
+                chat_id = f"{chat_id}@c.us"
+
+            if not errors:
+                contacts = dict(self._config_entry.options.get(CONF_CONTACTS, {}))
+                contacts[name] = chat_id
+                return self.async_create_entry(
+                    title="", data={CONF_CONTACTS: contacts}
+                )
+
+        return self.async_show_form(
+            step_id="add_contact",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("contact_name"): str,
+                    vol.Required("chat_id"): str,
+                }
+            ),
+            errors=errors,
+        )
+
+    async def async_step_remove_contact(
+        self, user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Remove an existing contact."""
+        current_contacts = self._config_entry.options.get(CONF_CONTACTS, {})
+
+        if user_input is not None:
+            name = user_input["contact_name"]
+            contacts = dict(current_contacts)
+            contacts.pop(name, None)
+            return self.async_create_entry(
+                title="", data={CONF_CONTACTS: contacts}
+            )
+
+        return self.async_show_form(
+            step_id="remove_contact",
+            data_schema=vol.Schema(
+                {
+                    vol.Required("contact_name"): vol.In(
+                        {n: f"{n} ({cid})" for n, cid in current_contacts.items()}
+                    ),
+                }
+            ),
         )

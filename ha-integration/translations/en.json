@@ -34,12 +34,30 @@
   "options": {
     "step": {
       "init": {
-        "title": "WhatsApp Notifier Settings",
-        "description": "Configure contacts for quick-send entities.\n{contacts_help}",
+        "title": "WhatsApp Contacts",
+        "description": "Current contacts: {contacts_list}",
         "data": {
-          "contacts": "Contacts"
+          "action": "Action"
+        }
+      },
+      "add_contact": {
+        "title": "Add Contact",
+        "description": "Add a new WhatsApp contact. Chat ID is the phone number with country code (e.g. 48XXXXXXXXX).",
+        "data": {
+          "contact_name": "Contact name",
+          "chat_id": "Chat ID (phone number)"
+        }
+      },
+      "remove_contact": {
+        "title": "Remove Contact",
+        "description": "Select a contact to remove.",
+        "data": {
+          "contact_name": "Contact"
         }
       }
+    },
+    "error": {
+      "empty_fields": "Name and Chat ID cannot be empty"
     }
   }
 }
