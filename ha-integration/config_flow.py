@@ -36,6 +36,14 @@ class WapiConfigFlow(ConfigFlow, domain=DOMAIN):
         self._session_id: str = ""
         self._needs_auth: bool = False
 
+    def _reuse_existing_credentials(self) -> bool:
+        """Copy api_url and api_key from an existing wapi config entry."""
+        for entry in self.hass.config_entries.async_entries(DOMAIN):
+            self._api_url = entry.data[CONF_API_URL]
+            self._api_key = entry.data.get(CONF_API_KEY, "")
+            return True
+        return False
+
     async def _try_discover(self) -> str | None:
         """Try to auto-discover WhatsApp API."""
         session = async_get_clientsession(self.hass)
@@ -68,6 +76,10 @@ class WapiConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._needs_auth = False
                 return await self.async_step_session()
         else:
+            # If another wapi entry exists, reuse its credentials
+            if self._reuse_existing_credentials():
+                return await self.async_step_session()
+
             discovered = await self._try_discover()
             if discovered:
                 self._api_url = discovered
@@ -115,12 +127,16 @@ class WapiConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_session(
         self, user_input: dict[str, Any] | None = None,
     ) -> ConfigFlowResult:
-        """Step 3: Enter session ID."""
+        """Step 3: Select or enter session ID."""
         errors: dict[str, str] = {}
+        NEW_SESSION = "__new__"
 
         if user_input is not None:
-            self._session_id = user_input[CONF_SESSION]
+            choice = user_input[CONF_SESSION]
+            if choice == NEW_SESSION:
+                return await self.async_step_session_manual()
 
+            self._session_id = choice
             await self.async_set_unique_id(f"wapi_{self._session_id}")
             self._abort_if_unique_id_configured()
 
@@ -134,8 +150,61 @@ class WapiConfigFlow(ConfigFlow, domain=DOMAIN):
                 options={CONF_CONTACTS: {}},
             )
 
+        # Fetch available sessions from API
+        session = async_get_clientsession(self.hass)
+        client = WapiClient(session, self._api_url, self._api_key)
+        all_sessions = await client.get_sessions()
+
+        # Filter out already configured sessions
+        configured = {
+            e.data[CONF_SESSION]
+            for e in self.hass.config_entries.async_entries(DOMAIN)
+        }
+        available = [s for s in all_sessions if s not in configured]
+
+        options: dict[str, str] = {}
+        for sid in available:
+            status = await client.get_session_status(sid)
+            state = status.get("state", "unknown")
+            options[sid] = f"{sid} ({state})"
+        options[NEW_SESSION] = "— Enter new session ID —"
+
         return self.async_show_form(
             step_id="session",
+            data_schema=vol.Schema(
+                {vol.Required(CONF_SESSION): vol.In(options)}
+            ),
+            errors=errors,
+            description_placeholders={"api_url": self._api_url},
+        )
+
+    async def async_step_session_manual(
+        self, user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Step 3b: Manually enter session ID."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            self._session_id = user_input[CONF_SESSION].strip()
+
+            if not self._session_id:
+                errors["base"] = "empty_fields"
+            else:
+                await self.async_set_unique_id(f"wapi_{self._session_id}")
+                self._abort_if_unique_id_configured()
+
+                return self.async_create_entry(
+                    title=f"WhatsApp ({self._session_id})",
+                    data={
+                        CONF_API_URL: self._api_url,
+                        CONF_API_KEY: self._api_key,
+                        CONF_SESSION: self._session_id,
+                    },
+                    options={CONF_CONTACTS: {}},
+                )
+
+        return self.async_show_form(
+            step_id="session_manual",
             data_schema=vol.Schema(
                 {vol.Required(CONF_SESSION): str}
             ),

@@ -64,6 +64,22 @@ class WapiClient:
         except (aiohttp.ClientError, TimeoutError):
             return None
 
+    async def get_sessions(self) -> list[str]:
+        """List all session IDs from the API."""
+        try:
+            async with self._session.get(
+                f"{self._api_url}/session/getSessions",
+                headers=self._headers(),
+                timeout=DEFAULT_TIMEOUT,
+            ) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    if data.get("success"):
+                        return data.get("result", [])
+                return []
+        except (aiohttp.ClientError, TimeoutError):
+            return []
+
     async def get_session_status(self, session_id: str) -> dict[str, Any]:
         """Get session status."""
         try:
