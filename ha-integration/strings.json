@@ -17,7 +17,14 @@
       },
       "session": {
         "title": "Session",
-        "description": "Enter the WhatsApp session ID to use.",
+        "description": "Select an existing WhatsApp session or add a new one.",
+        "data": {
+          "session": "Session"
+        }
+      },
+      "session_manual": {
+        "title": "New Session",
+        "description": "Enter the WhatsApp session ID to create.",
         "data": {
           "session": "Session ID"
         }

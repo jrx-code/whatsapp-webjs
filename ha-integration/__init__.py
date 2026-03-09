@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 
-from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
@@ -18,16 +16,9 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.BINARY_SENSOR, Platform.BUTTON, Platform.NOTIFY, Platform.SENSOR]
 
-ICON_PATH = Path(__file__).parent
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up WhatsApp Notifier from a config entry."""
-    # Register brand icons so HA frontend can display them
-    await hass.http.async_register_static_paths(
-        [StaticPathConfig(f"/brands/{DOMAIN}", str(ICON_PATH), True)]
-    )
-
     session = async_get_clientsession(hass)
     client = WapiClient(
         session,
