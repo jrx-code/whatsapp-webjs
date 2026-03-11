@@ -13,8 +13,12 @@
   <div class="dot" id="statusDot"></div>
   <h1>WhatsApp API</h1>
   <select class="session-select" id="sessionSelect" onchange="switchSession()"></select>
+  <label class="toggle-label" style="margin:0;display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text-muted)">
+    <input type="checkbox" id="sidebarToggle" onchange="toggleSidebar()"> Logi
+  </label>
 </div>
 
+<div class="layout-wrap">
 <div class="container">
   <!-- Send message -->
   <div class="card">
@@ -65,6 +69,38 @@
       </div>
     </div>
   </div>
+
+  <!-- Terminal -->
+  <div class="card">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+      Terminal
+      <div style="display:flex;gap:6px">
+        <button class="btn-ghost" style="padding:4px 10px;font-size:12px" onclick="termRun('healthz')">healthz</button>
+        <button class="btn-ghost" style="padding:4px 10px;font-size:12px" onclick="termRun('sessions')">sesje</button>
+        <button class="btn-ghost" style="padding:4px 10px;font-size:12px" onclick="termRun('ping')">ping</button>
+        <button class="btn-ghost" style="padding:4px 10px;font-size:12px" onclick="termClear()">wyczysc</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="term" id="term"><span class="term-dim">Kliknij przycisk lub wpisz komende...</span></div>
+      <div class="term-input-wrap">
+        <span class="term-prompt">$</span>
+        <input type="text" class="term-input" id="termInput" placeholder="GET /session/status/571603685" onkeydown="if(event.key==='Enter')termExec()">
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Messages sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span>Ostatnie wiadomosci</span>
+    <button class="btn-ghost" style="padding:4px 8px;font-size:12px" onclick="loadMessages()">Odswiez</button>
+  </div>
+  <div class="messages-list" id="messagesList">
+    <div style="color:var(--text-dim);font-size:13px;padding:12px">Wlacz panel aby zaladowac...</div>
+  </div>
+</aside>
 </div>
 
 <script>
@@ -271,7 +307,144 @@ function esc(s) {
   return d.innerHTML;
 }
 
+function toggleSidebar() {
+  const on = document.getElementById('sidebarToggle').checked;
+  document.body.classList.toggle('sidebar-open', on);
+  localStorage.setItem('wa-sidebar', on ? '1' : '0');
+  if (on) loadMessages();
+}
+
+async function loadMessages() {
+  const el = document.getElementById('messagesList');
+  el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:12px">Ladowanie...</div>';
+  try {
+    const res = await api(`/client/getChats/${currentSession}`);
+    const chats = (res.data || res.chats || res.result || res);
+    if (!Array.isArray(chats)) throw new Error('bad response');
+
+    const recent = chats
+      .filter(c => c.lastMessage)
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+      .slice(0, 50);
+
+    if (!recent.length) {
+      el.innerHTML = '<div style="color:var(--text-dim);font-size:13px;padding:12px">Brak wiadomosci</div>';
+      return;
+    }
+
+    el.innerHTML = recent.map(c => {
+      const name = c.name || c.id?.user || '?';
+      const body = c.lastMessage?.body || c.lastMessage?.type || '';
+      const ts = c.timestamp ? new Date(c.timestamp * 1000) : null;
+      const time = ts ? ts.toLocaleTimeString('pl', {hour:'2-digit',minute:'2-digit'}) : '';
+      const date = ts ? ts.toLocaleDateString('pl', {day:'2-digit',month:'2-digit'}) : '';
+      const fromMe = c.lastMessage?.fromMe;
+      const dir = fromMe ? '<span class="msg-dir out">&#8594;</span>' : '<span class="msg-dir in">&#8592;</span>';
+      const unread = c.unreadCount > 0 ? `<span class="msg-badge">${c.unreadCount}</span>` : '';
+      return `<div class="msg-item" onclick="pickContact('${esc(c.id?._serialized || '')}','',${!!c.isGroup})">
+        <div class="msg-top"><span class="msg-name">${esc(name)}</span>${unread}<span class="msg-time">${date} ${time}</span></div>
+        <div class="msg-body">${dir} ${esc(body.substring(0, 120))}</div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = `<div style="color:var(--red);font-size:13px;padding:12px">Blad: ${esc(e.message)}</div>`;
+  }
+}
+
+// --- Terminal ---
+function termLog(text, cls) {
+  const term = document.getElementById('term');
+  const line = document.createElement('div');
+  line.className = 'term-line' + (cls ? ' ' + cls : '');
+  line.textContent = text;
+  term.appendChild(line);
+  term.scrollTop = term.scrollHeight;
+}
+
+function termJson(obj) {
+  const term = document.getElementById('term');
+  const line = document.createElement('pre');
+  line.className = 'term-line term-json';
+  line.textContent = JSON.stringify(obj, null, 2);
+  term.appendChild(line);
+  term.scrollTop = term.scrollHeight;
+}
+
+function termClear() {
+  document.getElementById('term').innerHTML = '';
+}
+
+async function termRun(cmd) {
+  const ts = new Date().toLocaleTimeString('pl', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  termLog(`[${ts}] $ ${cmd}`, 'term-cmd');
+  const t0 = performance.now();
+  try {
+    let data;
+    if (cmd === 'healthz') {
+      const raw = await api('/healthz');
+      const s = (raw.sessions || []).find(s => s.sessionId === currentSession);
+      data = s ? { sessionId: s.sessionId, state: s.state, connected: s.connected } : { error: 'session not found', available: (raw.sessions||[]).map(s=>s.sessionId) };
+    } else if (cmd === 'sessions') {
+      data = await api('/session/getSessions');
+    } else if (cmd === 'ping') {
+      data = await api('/ping');
+    } else if (cmd === 'info') {
+      data = await api(`/client/getClassInfo/${currentSession}`);
+    } else if (cmd === 'version') {
+      data = await api(`/client/getWWebVersion/${currentSession}`);
+    } else if (cmd === 'chats') {
+      const res = await api(`/client/getChats/${currentSession}`);
+      const chats = res.data || res;
+      data = { total: chats.length, unread: chats.filter(c => c.unreadCount > 0).length };
+    } else if (cmd === 'status') {
+      data = await api(`/session/status/${currentSession}`);
+    } else {
+      // Custom: "GET /path" or just "/path"
+      let path = cmd;
+      let method = 'GET';
+      let body = null;
+      const parts = cmd.match(/^(GET|POST)\s+(.+)/i);
+      if (parts) { method = parts[1].toUpperCase(); path = parts[2]; }
+      if (!path.startsWith('/')) path = '/' + path;
+      // Replace {session} placeholder
+      path = path.replace(/\{session\}/g, currentSession);
+      const opts = { method };
+      if (method === 'POST') {
+        opts.headers = { 'Content-Type': 'application/json' };
+        // Check if there's JSON after the path
+        const jsonIdx = path.indexOf(' {');
+        if (jsonIdx > 0) {
+          opts.body = path.substring(jsonIdx + 1);
+          path = path.substring(0, jsonIdx);
+        } else {
+          opts.body = '{}';
+        }
+      }
+      data = await api(path, opts);
+    }
+    const ms = Math.round(performance.now() - t0);
+    termLog(`OK (${ms}ms)`, 'term-ok');
+    termJson(data);
+  } catch (e) {
+    const ms = Math.round(performance.now() - t0);
+    termLog(`ERROR (${ms}ms): ${e.message}`, 'term-err');
+  }
+}
+
+function termExec() {
+  const input = document.getElementById('termInput');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  input.value = '';
+  termRun(cmd);
+}
+
 // Init
+const savedSidebar = localStorage.getItem('wa-sidebar') === '1';
+if (savedSidebar) {
+  document.getElementById('sidebarToggle').checked = true;
+  document.body.classList.add('sidebar-open');
+}
 loadSessions();
 </script>
 </body>
