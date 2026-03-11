@@ -5,6 +5,9 @@ name: whatsapp-api
 
 services:
   api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
     image: wwebjs-api-patched:latest
     container_name: wwebjs-web-api
     restart: unless-stopped

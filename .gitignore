@@ -2,3 +2,6 @@
 sessions/
 webui/sessions.json
 ha-integration/__pycache__/
+api/node_modules/
+api/sessions/
+api/.env
