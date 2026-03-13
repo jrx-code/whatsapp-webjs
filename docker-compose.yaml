@@ -1,5 +1,4 @@
 # WhatsApp Web API (wwebjs) with Caddy reverse proxy
-# Deployment: /share/Container/whatsapp-webjs/
 
 name: whatsapp-api
 
@@ -50,8 +49,8 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./webui:/srv/webui:ro
-      - /share/Maintenance/key-management/ssl/fullchain.pem:/certs/fullchain.pem:ro
-      - /share/Maintenance/key-management/ssl/key.pem:/certs/key.pem:ro
+      - ${SSL_CERT_DIR}/fullchain.pem:/certs/fullchain.pem:ro
+      - ${SSL_CERT_DIR}/key.pem:/certs/key.pem:ro
     deploy:
       resources:
         limits:
@@ -71,7 +70,7 @@ services:
     networks:
       internal:
       qnetwork:
-        mac_address: "02:42:1e:7c:13:03"
+        mac_address: "${CADDY_MAC}"
     depends_on:
       - api
 
@@ -80,4 +79,4 @@ networks:
     driver: bridge
   qnetwork:
     external: true
-    name: qnet-dhcp-eth0-6d6da6
+    name: ${EXT_NETWORK}
