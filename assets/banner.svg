@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="300" viewBox="0 0 900 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#075e54"/>
+      <stop offset="50%" style="stop-color:#128c7e"/>
+      <stop offset="100%" style="stop-color:#25d366"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#25d366"/>
+      <stop offset="100%" style="stop-color:#128c7e"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="300" rx="16" fill="url(#bg)"/>
+
+  <!-- Subtle pattern -->
+  <g opacity="0.06" fill="#fff">
+    <circle cx="50" cy="50" r="30"/>
+    <circle cx="850" cy="250" r="40"/>
+    <circle cx="750" cy="60" r="20"/>
+    <circle cx="150" cy="230" r="25"/>
+    <circle cx="450" cy="280" r="15"/>
+    <circle cx="680" cy="150" r="35"/>
+    <circle cx="300" cy="30" r="18"/>
+  </g>
+
+  <!-- WhatsApp icon -->
+  <g transform="translate(80, 85)" filter="url(#shadow)">
+    <rect width="130" height="130" rx="30" fill="rgba(255,255,255,0.15)"/>
+    <g transform="translate(65, 65)">
+      <!-- WhatsApp phone icon -->
+      <path d="M0,-45 C-24.8,-45 -45,-24.8 -45,0 C-45,8.3 -42.6,16 -38.3,22.5 L-45,45 L-21.5,38.5 C-15.2,42.2 -7.8,44.3 0,44.3 C24.8,44.3 45,24.1 45,-0.7 C45,-24.8 24.8,-45 0,-45z" fill="#fff"/>
+      <path d="M0,-38 C-21,38 -38,-21 -38,0 C-38,7 -35.8,13.5 -32,19 L-38,38 L-18,32.3 C-12.5,35.5 -6.5,37.3 0,37.3 C21,37.3 38,20.3 38,-0.7 C38,-21 21,-38 0,-38z" fill="#25d366"/>
+      <path d="M-17,10 C-17,10 -14.5,14 -8,20 C-1.5,14 8,-3 15,-8 L10,-11 C10,-11 5,-4 -1.5,5 C-1.5,5 -7,0 -10,-3 z" fill="#fff"/>
+    </g>
+  </g>
+
+  <!-- Title -->
+  <text x="250" y="120" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-weight="700" font-size="48" fill="#fff" filter="url(#shadow)">WhatsApp WebJS</text>
+
+  <!-- Subtitle -->
+  <text x="250" y="160" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-weight="400" font-size="20" fill="rgba(255,255,255,0.85)">REST API + WebUI + Home Assistant Integration</text>
+
+  <!-- Tags -->
+  <g transform="translate(250, 185)">
+    <rect width="80" height="28" rx="14" fill="rgba(255,255,255,0.2)"/>
+    <text x="40" y="19" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">Docker</text>
+
+    <rect x="90" width="80" height="28" rx="14" fill="rgba(255,255,255,0.2)"/>
+    <text x="130" y="19" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">Node.js</text>
+
+    <rect x="180" width="80" height="28" rx="14" fill="rgba(255,255,255,0.2)"/>
+    <text x="220" y="19" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">Caddy</text>
+
+    <rect x="270" width="120" height="28" rx="14" fill="rgba(255,255,255,0.2)"/>
+    <text x="330" y="19" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">Home Assistant</text>
+
+    <rect x="400" width="80" height="28" rx="14" fill="rgba(255,255,255,0.2)"/>
+    <text x="440" y="19" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">wwebjs</text>
+  </g>
+
+  <!-- Version badge -->
+  <g transform="translate(740, 20)">
+    <rect width="140" height="32" rx="16" fill="rgba(0,0,0,0.3)"/>
+    <text x="70" y="21" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#25d366" text-anchor="middle">v2.0.0 / MIT</text>
+  </g>
+</svg>

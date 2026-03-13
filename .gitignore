@@ -5,3 +5,4 @@ ha-integration/__pycache__/
 api/node_modules/
 api/sessions/
 api/.env
+Caddyfile - *
