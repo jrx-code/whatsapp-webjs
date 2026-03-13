@@ -14,7 +14,6 @@ DEFAULT_TIMEOUT = 30
 DISCOVERY_URLS = [
     "http://wwebjs-web-api:3001",
     "http://localhost:3001",
-    "http://192.168.19.250:3001",
 ]
 
 ATTR_MEDIA_URL = "media_url"

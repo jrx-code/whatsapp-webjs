@@ -1,5 +1,5 @@
-whatsapp.iwanus.eu, whatsapp.home.iwanus.eu {
-	tls /certs/fullchain.pem /certs/key.pem
+{$DOMAIN}, {$DOMAIN_ALT} {
+	tls {$TLS_CERT} {$TLS_KEY}
 
 	handle /api/* {
 		uri strip_prefix /api
